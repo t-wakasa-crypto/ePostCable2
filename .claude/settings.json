@@ -1,0 +1,87 @@
+{
+  "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "requirements-gatherer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ requirements-gatherer 完了。次: @agent-requirements-analyst を起動して design/gathered-materials.md を元に要件定義を作成してください'"
+          }
+        ]
+      },
+      {
+        "matcher": "requirements-analyst",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ requirements-analyst 完了。次: @agent-basic-designer を起動して design/requirements.md を元に基本設計を作成してください'"
+          }
+        ]
+      },
+      {
+        "matcher": "basic-designer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ basic-designer 完了。次: @agent-detailed-designer を起動して design/basic-design.md を元に詳細設計を作成してください'"
+          }
+        ]
+      },
+      {
+        "matcher": "detailed-designer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ detailed-designer 完了。次: @agent-db-designer と @agent-diagram-designer を並列で起動して design/detailed-design.md を元にそれぞれの設計を作成してください'"
+          }
+        ]
+      },
+      {
+        "matcher": "db-designer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ db-designer 完了。diagram-designer の完了を待っています'"
+          }
+        ]
+      },
+      {
+        "matcher": "diagram-designer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ diagram-designer 完了。設計パイプラインがすべて完了しました。\n📁 生成ファイル: gathered-materials.md / requirements.md / basic-design.md / detailed-design.md / db-design.md / diagrams.md\n\n次のステップ（個別に実行してください）:\n  実装計画: 「実装計画を作って」→ @agent-implementation-planner\n  レビュー資料: 「レビュー資料を作って」→ @agent-review-doc-creator'"
+          }
+        ]
+      },
+      {
+        "matcher": "implementation-planner",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ implementation-planner 完了。開発パイプラインは自律ループ中です。ユーザー確認なしで @agent-implementer を自動起動し dev/implementation-plan.md のタスク実装を続けます'"
+          }
+        ]
+      },
+      {
+        "matcher": "implementer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '✅ implementer 完了。開発パイプラインは自律ループ中です。ユーザー確認なしで @agent-code-reviewer を自動起動し dev/review-report.md を生成します'"
+          }
+        ]
+      },
+      {
+        "matcher": "code-reviewer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if grep -qs '\\*\\*総合評価\\*\\*: OK' dev/review-report.md; then echo '✅ code-reviewer 完了。総合評価: OK。開発パイプラインが完了しました。'; else echo '⚠️ code-reviewer 完了。総合評価: 要修正/差し戻し（dev/review-report.md 参照）。dev/CLAUDE.md の自律ループに従い、レビュー往復3回未満ならユーザー確認なしで @agent-implementer を自動的に再起動して修正し、完了後に再度 @agent-code-reviewer でレビューします。3回に達した場合は自律ループを停止しユーザーに報告してください'; fi"
+          }
+        ]
+      }
+    ]
+  }
+}

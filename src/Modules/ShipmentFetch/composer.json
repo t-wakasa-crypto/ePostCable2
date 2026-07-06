@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/shipmentfetch",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\ShipmentFetch\\": "app/",
+            "Modules\\ShipmentFetch\\Database\\Factories\\": "database/factories/",
+            "Modules\\ShipmentFetch\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\ShipmentFetch\\Tests\\": "tests/"
+        }
+    }
+}

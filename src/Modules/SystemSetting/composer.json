@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/systemsetting",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\SystemSetting\\": "app/",
+            "Modules\\SystemSetting\\Database\\Factories\\": "database/factories/",
+            "Modules\\SystemSetting\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\SystemSetting\\Tests\\": "tests/"
+        }
+    }
+}

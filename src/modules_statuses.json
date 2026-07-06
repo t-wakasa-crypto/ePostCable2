@@ -1,0 +1,11 @@
+{
+    "Shared": true,
+    "Auth": true,
+    "Dashboard": true,
+    "Invoice": true,
+    "DeliveryNote": true,
+    "SendMailLog": true,
+    "ShipmentFetch": true,
+    "SystemSetting": true,
+    "User": true
+}

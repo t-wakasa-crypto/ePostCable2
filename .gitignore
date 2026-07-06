@@ -1,0 +1,10 @@
+.claude/settings.local.json
+src/package-lock.json
+src/composer.lock
+
+# 実認証情報を含むため、.env.example 以外は追跡しない
+.env
+src/.env
+
+# WSL/Windows のダウンロード由来メタデータ
+*:Zone.Identifier

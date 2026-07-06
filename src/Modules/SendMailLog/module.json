@@ -1,0 +1,11 @@
+{
+    "name": "SendMailLog",
+    "alias": "sendmaillog",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\SendMailLog\\Providers\\SendMailLogServiceProvider"
+    ],
+    "files": []
+}

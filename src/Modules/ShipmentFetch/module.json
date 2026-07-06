@@ -1,0 +1,11 @@
+{
+    "name": "ShipmentFetch",
+    "alias": "shipmentfetch",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\ShipmentFetch\\Providers\\ShipmentFetchServiceProvider"
+    ],
+    "files": []
+}

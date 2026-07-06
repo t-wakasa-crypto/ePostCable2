@@ -1,0 +1,11 @@
+{
+    "name": "DeliveryNote",
+    "alias": "deliverynote",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DeliveryNote\\Providers\\DeliveryNoteServiceProvider"
+    ],
+    "files": []
+}

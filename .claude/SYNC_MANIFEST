@@ -1,0 +1,46 @@
+# claude-pipeline-template 同期マニフェスト
+#
+# ここに列挙されたパスのみが、テンプレートリポジトリ（claude-pipeline-template）から
+# 同期される「フレームワーク部分」である。gitignore と同じ記法で記述する。
+#
+# 重要: このファイルに列挙されていないパス（design/*.md や dev/*.md の実データ、
+# src/ 配下の実装コードなど、プロジェクト固有の成果物）は、
+# テンプレート同期スクリプトが絶対に上書きしてはならない。
+# 同期スクリプトは必ずこのファイルを読み、含まれるパスのみを対象にすること。
+
+# ルーター
+/CLAUDE.md
+
+# 各パイプライン・各領域の運用ルール（雛形。プロジェクトが個別にカスタマイズした
+# 場合は同期前に差分を確認すること）
+/design/CLAUDE.md
+/dev/CLAUDE.md
+/src/CLAUDE.md
+/docker/CLAUDE.md
+/docs/CLAUDE.md
+/scripts/CLAUDE.md
+
+# 各運用ルールが参照する詳細設計書（docs/ 配下だが実データではなくフレームワーク
+# 部分。各 CLAUDE.md を薄く保つ方針のため、実際の手順・判定条件はこちらに書く）
+/docs/パイプライン全体設計書.md
+/docs/システム設計パイプライン設計書.md
+/docs/システム開発パイプライン設計書.md
+/docs/システム開発環境設計書.md
+/docs/システム開発Docker環境設計書.md
+/docs/システム開発ドキュメント設計書.md
+/docs/システム開発スクリプト設計書.md
+
+# エージェント・スキル本体
+/.claude/agents/
+/.claude/skills/
+
+# ---- 以下は同期対象外（プロジェクト固有・例示のための明示的な除外コメント） ----
+# /design/*.md          （context.md, requirements.md 等の実データ）
+# /dev/implementation-plan.md
+# /dev/review-report.md
+# /dev/adhoc-fixes.md
+# /src/**               （src/CLAUDE.md 自体を除く Laravel 実装コード）
+# /docker/**            （docker/CLAUDE.md 自体を除く Dockerfile・設定ファイル）
+# /docs/**              （docs/CLAUDE.md および上記の詳細設計書7点を除く、
+#                          実装済みシステム向けの実ドキュメント）
+# /scripts/*.sh         （scripts/CLAUDE.md 自体を除く個別スクリプト本体）
