@@ -308,6 +308,136 @@ resend(Invoice $invoice):
 
 ---
 
+## 1A. 画面（UI）詳細仕様（FA-01・2026-07-07 追加）
+
+> 出典: `basic-design.md` §5A「画面デザイン方針」（Tailwind 標準ユーティリティのみ・
+> 追加コンポーネントライブラリ不使用・サイドナビ+ヘッダー構成）を実装検証可能なレベルへ
+> 具体化する。UI 仕様のみを定義し、業務ロジック・API 定義（§2）・シーケンス（§3）・
+> Model（§4）・状態遷移（§5）は変更しない。Tailwind クラスは代表的な用途を示す指針で
+> あり、実装での厳密なクラス名は本節と整合していれば可とする。
+
+### 1A.1 共通レイアウト（`layouts/app` 想定）
+
+ログイン画面を除く全管理画面が継承する共通 Blade レイアウト。ナビ項目・ヘッダーの
+変更が全画面へ一括反映される（NFR-M）。
+
+**構造**: `flex min-h-screen` の 2 カラム。左に固定サイドナビ、右にヘッダー + メイン。
+
+| 領域 | 内容 | Tailwind 使用方針（代表） |
+|------|------|--------------------------|
+| サイドナビ（左固定） | アプリ名/ロゴ（上部）+ ナビリンク群 | `w-64 shrink-0 bg-slate-800 text-slate-100 min-h-screen` / リンク `block px-4 py-2 rounded hover:bg-slate-700`、現在ページは `bg-slate-900 font-semibold`（active 強調） |
+| ヘッダー（上部） | 画面タイトル（左）、ログインユーザー名・ロールバッジ・ログアウトボタン（右） | `flex items-center justify-between h-14 px-6 bg-white border-b` / ロールバッジ `text-xs px-2 py-0.5 rounded-full`（admin=`bg-indigo-100 text-indigo-700` / general=`bg-gray-100 text-gray-600`）/ ログアウトは `@csrf` 付き POST フォームのボタン |
+| メインコンテンツ | 各画面固有の一覧・詳細・フォーム。フラッシュメッセージ領域を最上部に配置 | `flex-1 bg-gray-50 p-6` / フラッシュ success=`bg-green-50 text-green-800 border border-green-200`、error=`bg-red-50 text-red-800 border border-red-200`、共通 `rounded p-3 mb-4` |
+
+**サイドナビ項目構成**（basic-design §5A.2 と整合。表示順）:
+
+| 項目 | 遷移先ルート | 表示条件 |
+|------|-------------|---------|
+| ダッシュボード | `dashboard` | auth（全員） |
+| 請求書 | `invoices.index` | auth（全員） |
+| 納品書 | `delivery-notes.index` | auth（全員） |
+| メール送信履歴 | `send-mail-logs.index` | auth（全員） |
+| 出荷取得履歴 | `shipment-fetch-logs.index` | auth（全員） |
+| ユーザー管理 | `users.index` | `isAdmin()` 時のみ表示（FR-17） |
+| システム設定 | `system-settings.index` | `isAdmin()` 時のみ表示（FR-13/FR-17） |
+
+- admin 専用リンクの非表示はあくまで UI 補助であり、保護の本体は `auth` / `admin`
+  ミドルウェア（§2.1 / §7）。ロールに関わらずルート保護は維持される。
+
+**共通 UI 部品の Tailwind 方針**（各画面で再利用）:
+
+| 部品 | 用途 | 代表クラス |
+|------|------|-----------|
+| 状態バッジ | 書類/ログの status 表示 | `inline-block text-xs px-2 py-0.5 rounded-full`。pending=`bg-gray-100 text-gray-700` / processing=`bg-blue-100 text-blue-700` / sent・completed=`bg-green-100 text-green-700` / failed=`bg-red-100 text-red-700` / failed_permanent=`bg-red-200 text-red-900` / running=`bg-yellow-100 text-yellow-700` |
+| 一次ボタン | 送信・保存・実行 | `bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded` |
+| 副次ボタン | キャンセル・戻る | `bg-white border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded` |
+| 危険ボタン | 削除 | `bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded` |
+| テーブル | 一覧共通 | `min-w-full divide-y divide-gray-200` / thead `bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase` / 行 `hover:bg-gray-50` / セル `px-4 py-3 text-sm` |
+| カード | 詳細・フォーム枠 | `bg-white shadow-sm rounded-lg border border-gray-200 p-6` |
+| フォーム入力 | input/select/textarea | `border border-gray-300 rounded px-3 py-2 w-full focus:ring-indigo-500 focus:border-indigo-500` / ラベル `block text-sm font-medium text-gray-700 mb-1` / エラー `text-sm text-red-600 mt-1` |
+| ページネーション | 一覧下部 | Laravel Paginator の Tailwind ビュー（`links()`）を使用 |
+
+### 1A.2 ログイン画面（FR-16）
+
+- **レイアウト**: 共通レイアウト **非継承**の単独ページ。サイドナビ・ヘッダーなし。
+- **構成**: 画面中央寄せ（`min-h-screen flex items-center justify-center bg-gray-50`）の
+  カード（`w-full max-w-sm bg-white shadow rounded-lg p-8`）内に、アプリ名見出し、
+  メール入力、パスワード入力、ログインボタン（一次ボタン・`w-full`）を縦積み。
+- **要素**: `@csrf`、`email`（`type=email`）、`password`（`type=password`）、
+  バリデーション/認証エラー・試行制限メッセージをフォーム上部にエラースタイルで表示。
+
+### 1A.3 ダッシュボード（FR-07）
+
+- **構成**: 集計サマリーの**カードグリッド**（`grid grid-cols-1 md:grid-cols-3 gap-4`）。
+- **カード内容**: 請求書・納品書の status 別件数（数値を大きく `text-2xl font-bold`、
+  ラベルを `text-sm text-gray-500`、status バッジ併記）、直近の送信バッチ実行情報
+  （`displayStatus()` 判定・manual-resend 除外）、直近の出荷取得実行情報。
+- 各カードから対応する一覧画面へのリンク（副次ボタンまたはカード全体をリンク化）。
+
+### 1A.4 請求書 一覧・詳細（FR-08 / FR-15）／ 1A.5 納品書 一覧・詳細（FR-09）
+
+納品書は請求書と同一構成（Invoice→DeliveryNote 読替）。
+
+**一覧（index）**:
+- ページ上部に status 別サマリー（バッジ + 件数の横並び）とフィルタ（`status` の
+  select・allowlist）、CSV ダウンロードボタン（副次ボタン）、admin には一括再送
+  （bulkRequeue）・バッチ実行（runBatch）ボタンを配置。
+- 本体は**テーブル**（番号・宛先・金額・status バッジ・作成日時・操作リンク）。
+  1 ページ 20 件（NFR-P-01）。下部にページネーション。
+- 操作列: 詳細リンク、PDF ダウンロード。bulkRequeue はチェックボックス選択 +
+  一括操作ボタン（`retry_count>=3` を含む場合は JS confirm ダイアログ）。
+
+**詳細（show）**:
+- 上部に書類ヘッダー**カード**（番号・宛先・金額・税額・status バッジ・各日付）。
+- 明細を**テーブル**で表示（品目・数量・単価・金額）。
+- 送信履歴（SendMailLogItem 一覧）を**テーブル**で表示（status バッジ・送信日時・
+  エラーメッセージ）。
+- 操作カード: 再送（resend・一次ボタン + confirm）、PDF ダウンロード（副次）、
+  admin にはメールアドレス編集（updateEmails・`failed`/`failed_permanent` のみ活性）を
+  フォームで配置（メール入力 1〜3 件）。
+
+### 1A.6 メール送信履歴 一覧・詳細（FR-10）
+
+**一覧（index）**:
+- フィルタ（`filter` の select・allowlist: completed/running/manual_resend/has_pending
+  /has_sent/has_failure/has_failure_permanent/failed）。
+- **テーブル**（バッチ名・displayStatus バッジ・開始/完了日時・dispatched_count 等の
+  カウント・詳細リンク）。20 件/ページ（NFR-P-01）。
+
+**詳細（show）**:
+- 上部にバッチ実行情報**カード**（batch_name・displayStatus・各日時・件数）。
+- 書類 1 通ごとの明細（SendMailLogItem）を**テーブル**表示。50 件/ページ（NFR-P-01）。
+  status バッジ・宛先書類へのリンク・エラーメッセージ。
+- 「送信済みにする」ボタンは §5.4 の条件で表示（complete 機能は廃止済みのため、
+  実質ボタンは表示されない／別画面確認）。
+
+### 1A.7 出荷取得履歴（FR-11）
+
+- フィルタ（`status` の select・allowlist: running/completed/failed）と、admin には
+  バッチ手動起動ボタン（runBatch・一次ボタン + confirm）を上部に配置。
+- **テーブル**（status バッジ・開始/完了日時・fetched_count・作成件数・skipped_count・
+  execution_seconds・error_message）。ページネーション。
+
+### 1A.8 ユーザー管理（admin・FR-12）
+
+- 上部に新規作成ボタン（一次ボタン）、退職者表示切替（`include_retired` チェック/リンク）。
+- **テーブル**（名前・メール・role バッジ・退職状態・操作）。20 件/ページ・退職者は
+  既定除外。
+- 作成/編集は**標準フォーム**（モーダルまたは別カード）: name・email・password
+  （+confirmation）・role（select: general/admin）・retired（編集時チェック）。
+  バリデーションエラーは各項目下にエラースタイルで表示。
+- 削除は危険ボタン + confirm。自分自身の削除ボタンは非表示/非活性（BR-08）。
+
+### 1A.9 システム設定（admin・FR-13）
+
+- 設定項目を**標準フォーム**（カード内）で表示・編集。integer 型は数値入力
+  （`min`/`max` 属性を `min_value`/`max_value` に対応）、emails 型は textarea
+  （1 行 1 アドレス）。各項目にラベル・説明・範囲を併記。
+- 保存ボタン（一次ボタン）。別カードにテストメール送信フォーム（email 入力 +
+  送信ボタン・sendTestMail）。
+
+---
+
 ## 2. API 定義（内部）
 
 ### 2.1 ルート一覧（web.php）
@@ -828,3 +958,9 @@ pending/processing --> failed_permanent : 恒久失敗 (error_message)
 | Q-14（開発・検証環境の ePostCable 検証系DB共用リスク） | 本プロジェクト（アプリケーション設計）のスコープ外。インフラ構成上の既知の制約として扱う（2026-07-02決定） | §8 |
 
 横断レビューで追加識別された Q-13・Q-14 は 2026-07-02 に解消済み。詳細な検討経緯は `design/questions.md` を参照。
+
+---
+
+## 変更履歴
+
+- 2026-07-07 機能追加 FA-01: basic-design §5A の画面デザイン方針（Tailwind 標準ユーティリティのみ・サイドナビ+ヘッダー構成）を受け、§1A「画面（UI）詳細仕様」を新設。共通レイアウト（サイドナビ項目構成・ヘッダー内容・共通 UI 部品の Tailwind 方針）と各画面（ログイン・ダッシュボード・請求書/納品書 一覧・詳細・メール送信履歴・出荷取得履歴・ユーザー管理・システム設定）の UI 仕様を追加。API 定義（§2）・シーケンス（§3）・Model（§4）・状態遷移（§5）等の既存内容は変更なし。

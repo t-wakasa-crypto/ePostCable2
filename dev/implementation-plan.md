@@ -599,3 +599,26 @@ T001 環境 → T002 modules → T003 共通基盤(例外/定数)
   `implementer` が行う（本計画の再生成は既存チェックを失うため、機能追加時は追記モードで扱う）。
 - 機能追加が発生した場合は `design/feature-log.md` 経由の追記モードで、
   最大タスク番号（現状 T115）の続きから新規タスクを起こす。
+
+---
+
+## 機能追加: FA-01 管理画面のUIデザイン方針追加（実装計画への反映日: 2026-07-07）
+
+> 出典: `design/basic-design.md` §5A「画面デザイン方針」／`design/detailed-design.md`
+> §1A「画面（UI）詳細仕様」／`design/diagrams.md` §13「管理画面レイアウト構成図」。
+> 実装済みの各管理 Blade に Tailwind スタイリングが未適用だった問題への対応。UI
+> スタイリングのみで、業務ロジック・データ構造・ルート・要件（FR/NFR/BR）は変更しない。
+> PDF 出力テンプレート（`*/pdf/` 配下）・メール本文テンプレート（`emails/` 配下）は対象外。
+> **依存**: 対象画面の Blade はいずれも既存タスク（T080/T097/T100〜T104 等）で実装済み。
+> 本 FA はそれら成果物の見た目を整える追補であり、既存タスクの書き換えは行わない。
+> 全タスク初期状態（`- [ ]` 未完了）。工数目安: 小（〜半日）/ 中（1〜2日）/ 大（3日以上）。
+
+- [x] TASK-116: 共通 Blade レイアウト（`layouts/app`）へサイドナビ＋ヘッダー＋メインコンテンツ構成を実装（basic §5A.2 / detailed §1A.1）。左固定サイドナビ（`w-64` / `bg-slate-800`）に7ナビ項目（ダッシュボード・請求書・納品書・メール送信履歴・出荷取得履歴・ユーザー管理・システム設定）を配置、ユーザー管理・システム設定リンクは `isAdmin()` 時のみ表示（FR-17。保護本体は auth/admin ミドルウェアで既存 T023 に依存）。上部ヘッダー（画面タイトル・ユーザー名・ロールバッジ・`@csrf` 付きログアウトボタン）、メイン領域（`flex-1 bg-gray-50 p-6`）とフラッシュメッセージ領域。現在ページの active 強調。工数: 中
+- [x] TASK-117: 共通 UI 部品の Tailwind 方針を整備・部品化（detailed §1A.1 の部品表）。状態バッジ（pending/processing/sent・completed/failed/failed_permanent/running の配色）、一次/副次/危険ボタン、テーブル、カード、フォーム入力（ラベル・エラー表示）、ページネーション（Laravel Paginator の Tailwind ビュー有効化）。各画面が再利用できるよう Blade コンポーネント／partial 化。工数: 中
+- [x] TASK-118: ログイン画面（`login`）へ Tailwind 適用（detailed §1A.2）。共通レイアウト非継承の単独ページとして中央寄せカード（`max-w-sm`）にアプリ名・email・password・ログインボタン（一次・`w-full`）を縦積み配置し、認証・試行制限エラーをエラースタイルで表示（FR-16）。工数: 小
+- [x] TASK-119: ダッシュボード画面（既存 TASK-T100 の成果物）へ Tailwind 適用（detailed §1A.3）。集計サマリーのカードグリッド（`grid md:grid-cols-3`）、status 別件数（数値強調＋状態バッジ）、直近送信バッチ・出荷取得情報カード、各一覧画面へのリンク（FR-07）。工数: 小
+- [x] TASK-120: 請求書・納品書 一覧／詳細画面（既存 TASK-T080/T097 の成果物）へ Tailwind 適用（detailed §1A.4/§1A.5）。一覧: status 別サマリー・フィルタ select・CSV/一括再送/バッチ実行ボタン・テーブル（20件/ページ）・ページネーション、bulkRequeue のチェックボックス選択＋`retry_count>=3` confirm。詳細: 書類ヘッダーカード・明細テーブル・送信履歴テーブル・操作カード（resend/PDF/admin 限定 updateEmails フォーム）（FR-08/FR-09）。工数: 中
+- [x] TASK-121: メール送信履歴 一覧／詳細画面（既存 TASK-T101 の成果物）へ Tailwind 適用（detailed §1A.6）。一覧: filter select（allowlist）・テーブル（displayStatus バッジ・各日時・カウント・20件/ページ）。詳細: バッチ実行情報カード・明細テーブル（50件/ページ・status バッジ・エラーメッセージ）（FR-10）。工数: 小
+- [x] TASK-122: 出荷取得履歴画面（既存 TASK-T102 の成果物）へ Tailwind 適用（detailed §1A.7）。status フィルタ select・admin 限定バッチ手動起動ボタン（confirm）・テーブル（status バッジ・各日時・各カウント・execution_seconds・error_message）・ページネーション（FR-11）。工数: 小
+- [x] TASK-123: ユーザー管理画面（admin・既存 TASK-T103 の成果物）へ Tailwind 適用（detailed §1A.8）。新規作成ボタン・退職者表示切替・テーブル（role バッジ・退職状態・操作・20件/ページ）、作成/編集フォーム（name/email/password+confirmation/role/retired・項目別エラー表示）、削除は危険ボタン＋confirm・自己削除ボタン非表示（BR-08 / FR-12）。工数: 中
+- [x] TASK-124: システム設定画面（admin・既存 TASK-T104 の成果物）へ Tailwind 適用（detailed §1A.9）。設定フォーム（integer 型は `min`/`max` 属性、emails 型は textarea・ラベル/説明/範囲併記）、保存ボタン、別カードにテストメール送信フォーム（sendTestMail）（FR-13）。工数: 小
